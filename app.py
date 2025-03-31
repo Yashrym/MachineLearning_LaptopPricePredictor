@@ -3,38 +3,30 @@ import pickle
 import numpy as np
 import pandas as pd
 import os
-import sys
 
-# Print system information for debugging
-st.write(f"Python version: {sys.version}")
-st.write(f"Current working directory: {os.getcwd()}")
-st.write(f"Files in directory: {os.listdir('.')}")
+# Remove debugging information in production
+# st.write(f"Python version: {sys.version}")
+# st.write(f"Current working directory: {os.getcwd()}")
+# st.write(f"Files in directory: {os.listdir('.')}")
 
-# Try to load the model with more detailed error handling
-try:
-    # First, try the mount path on Streamlit Cloud
-    mount_path = '/mount/src/machinelearning_laptoppricepredictor'
-    if os.path.exists(f"{mount_path}/pipe.pkl"):
-        with open(f"{mount_path}/pipe.pkl", 'rb') as f:
-            pipe = pickle.load(f)
-        with open(f"{mount_path}/df.pkl", 'rb') as f:
-            df = pickle.load(f)
-    # If that fails, try the local path
-    else:
+# Simplified model loading
+@st.cache_resource
+def load_model():
+    try:
         with open('pipe.pkl', 'rb') as f:
             pipe = pickle.load(f)
         with open('df.pkl', 'rb') as f:
             df = pickle.load(f)
-except FileNotFoundError as e:
-    st.error(f"File not found: {e}")
-    st.stop()
-except ModuleNotFoundError as e:
-    st.error(f"Module not found: {e}")
-    st.stop()
-except Exception as e:
-    st.error(f"Error: {e}")
-    st.stop()
+        return pipe, df
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None, None
 
+pipe, df = load_model()
+
+if pipe is None or df is None:
+    st.error("Failed to load the model. Please check the model files.")
+    st.stop()
 
 st.title("Laptop Predictor")
 
