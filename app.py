@@ -3,6 +3,11 @@ import pickle
 import numpy as np
 import pandas as pd
 import os
+import sys
+
+# Add version check
+if sys.version_info >= (3, 12):
+    st.warning("Running on Python 3.12+. If you encounter any issues, please contact the administrator.")
 
 # Remove debugging information in production
 # st.write(f"Python version: {sys.version}")
@@ -18,8 +23,12 @@ def load_model():
         with open('df.pkl', 'rb') as f:
             df = pickle.load(f)
         return pipe, df
+    except FileNotFoundError as e:
+        st.error(f"Model files not found: {e}")
+        return None, None
     except Exception as e:
-        st.error(f"Error loading model: {e}")
+        st.error(f"Error loading model: {str(e)}")
+        st.error("Python version: " + sys.version)
         return None, None
 
 pipe, df = load_model()
